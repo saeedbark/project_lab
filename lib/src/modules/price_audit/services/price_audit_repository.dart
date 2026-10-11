@@ -9,9 +9,18 @@ import 'package:project_lab/src/modules/price_audit/models/price.dart';
 /// place, where the app is composed, so either can be swapped without
 /// touching anything above.
 ///
-/// Both methods throw a [Failure] and nothing else.
+/// Every method fails with a [Failure] and nothing else: thrown from a
+/// `Future`, emitted as an error event from a `Stream`.
 abstract interface class PriceAuditRepository {
+  /// The aisle as it is now: one answer.
   Future<List<AuditEntry>> loadAisle(String aisle);
+
+  /// The aisle now, then again after every change, until cancelled.
+  ///
+  /// Nothing is opened until the stream is listened to, and cancelling the
+  /// subscription closes the connection. A [Failure] arrives as an error
+  /// event and ends the stream: watching again means listening again.
+  Stream<List<AuditEntry>> watchAisle(String aisle);
 
   /// Records what the auditor read on the label and returns the saved entry.
   Future<AuditEntry> recordShelfPrice({

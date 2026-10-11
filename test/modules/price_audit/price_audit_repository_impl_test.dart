@@ -16,6 +16,7 @@ void main() {
     api = FakePriceApi(
       latency: Duration.zero,
       slowLatency: const Duration(milliseconds: 50),
+      repriceEvery: null,
     );
     repository = PriceAuditRepositoryImpl(
       api: api,
@@ -87,6 +88,60 @@ void main() {
       expect(repository.loadAisle('Dairy'), throwsA(isA<UnexpectedFailure>()));
     });
   });
+
+  group('watchAisle', () {
+    test('each snapshot arrives as domain entries', () async {
+      final snapshots = <List<AuditEntry>>[];
+      final subscription = repository.watchAisle('Dairy').listen(snapshots.add);
+      await pumpEventQueue();
+
+      api.repriceNext(); // Fresh milk 12.50 → 13.00
+      await pumpEventQueue();
+
+      expect(snapshots, hasLength(2));
+      expect(snapshots.last.first.systemPrice, const Price(1300));
+      await subscription.cancel();
+    });
+
+    test('a dropped feed is one Failure, then the stream is done', () async {
+      final events = <Object>[];
+      repository
+          .watchAisle('Dairy')
+          .listen(
+            events.add,
+            onError: events.add,
+            onDone: () => events.add('done'),
+          );
+      await pumpEventQueue();
+
+      api.condition = NetworkCondition.offline;
+      api.repriceNext();
+      await pumpEventQueue();
+
+      expect(events, [isA<List<AuditEntry>>(), isA<OfflineFailure>(), 'done']);
+    });
+
+    test('a failed handshake is a Failure with no data before it', () {
+      api.condition = NetworkCondition.serverError;
+
+      expect(
+        repository.watchAisle('Dairy'),
+        emitsInOrder([emitsError(isA<ServerFailure>()), emitsDone]),
+      );
+    });
+
+    // The pipeline adds no subscription of its own: pausing and cancelling
+    // the repository's stream act on the API's feed directly.
+    test('cancel goes straight through to the feed', () async {
+      final subscription = repository.watchAisle('Dairy').listen((_) {});
+      await pumpEventQueue();
+      expect(api.hasLiveClients, isTrue);
+
+      await subscription.cancel();
+
+      expect(api.hasLiveClients, isFalse);
+    });
+  });
 }
 
 class _MalformedApi implements PriceApi {
@@ -97,5 +152,9 @@ class _MalformedApi implements PriceApi {
 
   @override
   Future<Map<String, Object?>> putShelfPrice(String barcode, String price) =>
+      throw UnimplementedError();
+
+  @override
+  Stream<List<Map<String, Object?>>> watchAisle(String aisle) =>
       throw UnimplementedError();
 }

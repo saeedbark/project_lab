@@ -36,3 +36,49 @@ final auditControllerProvider = AsyncNotifierProvider.autoDispose
       AuditController.new,
       retry: (retryCount, error) => null,
     );
+
+/// The live counterpart of [auditControllerProvider]: the same
+/// `AsyncValue<List<AuditEntry>>`, fed by a stream instead of a future.
+///
+/// There is no notifier. Riverpod calls `listen` on the stream, turns each
+/// snapshot into `AsyncData` and an error event into `AsyncError` (keeping
+/// the last snapshot), so nothing is left to write by hand. Saving goes
+/// straight to the repository and the server's echo arrives through this
+/// stream: the state has one writer.
+///
+/// `autoDispose` is what makes leaving an aisle close its socket: disposal
+/// cancels the subscription. Without it a StreamProvider is almost never
+/// destroyed, and every aisle ever opened would stay connected.
+final liveAisleProvider = StreamProvider.autoDispose
+    .family<List<AuditEntry>, String>(
+      (ref, aisle) {
+        final trace = ref.watch(traceProvider);
+        trace(TraceLayer.state, 'liveAisleProvider($aisle) subscribes');
+        // onCancel: the last widget stopped listening, either hidden (a
+        // route covers it) or gone. Riverpod first *pauses* the stream
+        // subscription. Disposal, which cancels it, follows only when the
+        // listener was removed; a hidden widget still counts.
+        ref
+          ..onCancel(
+            () => trace(
+              TraceLayer.state,
+              'liveAisleProvider($aisle): no '
+              'listener, subscription paused',
+            ),
+          )
+          ..onResume(
+            () => trace(TraceLayer.state, 'liveAisleProvider($aisle) resumed'),
+          )
+          ..onDispose(
+            () => trace(
+              TraceLayer.state,
+              'liveAisleProvider($aisle) '
+              'disposed, subscription cancelled',
+            ),
+          );
+        return ref.watch(priceAuditRepositoryProvider).watchAisle(aisle);
+      },
+      // A dropped feed stays dropped until the user taps Reconnect, for the
+      // same reason as the controller above.
+      retry: (retryCount, error) => null,
+    );

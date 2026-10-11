@@ -8,6 +8,15 @@ abstract interface class PriceApi {
 
   /// `PUT /entries/{barcode}/shelf-price`
   Future<Map<String, Object?>> putShelfPrice(String barcode, String shelfPrice);
+
+  /// `WS /aisles/{aisle}/live`: the aisle's rows now, then again every time
+  /// any of them changes on the server.
+  ///
+  /// A `Stream`, not a `Future`, because there is no last answer: the
+  /// server keeps talking until the client cancels or the connection drops.
+  /// A drop is one error event ([ConnectionException] or [ApiException]),
+  /// after which the stream is done.
+  Stream<List<Map<String, Object?>>> watchAisle(String aisle);
 }
 
 final class ApiException implements Exception {

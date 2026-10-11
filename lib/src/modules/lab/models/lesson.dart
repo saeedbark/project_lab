@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import 'package:project_lab/src/modules/lab/models/quest.dart';
 import 'package:project_lab/src/modules/lab/providers/trace_log.dart';
 
 enum Track {
@@ -38,6 +39,7 @@ class Lesson {
     required this.sources,
     required this.notesPath,
     required this.demo,
+    this.quest,
   });
 
   final String id;
@@ -71,4 +73,8 @@ class Lesson {
   final String notesPath;
 
   final Widget Function(TraceLog trace) demo;
+
+  /// The lesson as a game. When present the lesson opens on the quest, and
+  /// the demo, trace and brief sit one tap away in the lab view.
+  final Quest? quest;
 }

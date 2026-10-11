@@ -41,4 +41,39 @@ void main() {
     expect(find.text('Trace'), findsOneWidget);
     expect(find.text('Fresh milk 1L'), findsOneWidget);
   });
+
+  testWidgets('a lesson with a quest opens on the game, and Lab is one tap '
+      'away without losing the level', (tester) async {
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final quested = lessons.firstWhere((lesson) => lesson.quest != null);
+
+    await tester.pumpWidget(LabApp(lessons: lessons));
+    await tester.tap(find.textContaining(quested.title).first);
+    await tester.pumpAndSettle();
+    expect(find.text('0%'), findsOneWidget);
+    expect(find.text('Trace'), findsNothing);
+
+    // Level 1, played for real: a pizza and three plates.
+    await tester.tap(find.text('🍕 Order a pizza'));
+    await tester.tap(find.text('🍣 Open the belt'));
+    for (var i = 0; i < 35; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    await tester.ensureVisible(find.text('✋ Stop the belt'));
+    await tester.tap(find.text('✋ Stop the belt'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Continue'));
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('🔬 Open lab'));
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('Trace'), findsOneWidget);
+
+    await tester.tap(find.text('🎮 Back to game'));
+    await tester.pumpAndSettle();
+    expect(find.text('Level 2 of 12'), findsOneWidget);
+  });
 }

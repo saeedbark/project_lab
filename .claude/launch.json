@@ -6,6 +6,12 @@
       "runtimeExecutable": "flutter",
       "runtimeArgs": ["run", "-d", "web-server", "--web-port", "8123"],
       "port": 8123
+    },
+    {
+      "name": "lab-web-release",
+      "runtimeExecutable": "flutter",
+      "runtimeArgs": ["run", "-d", "web-server", "--release", "--web-port", "8137"],
+      "port": 8137
     }
   ]
 }

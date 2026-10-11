@@ -79,9 +79,18 @@ test/modules/<feature>/           # flat, one folder per module
 2. Add `lib/src/lessons/<track>/<id>_<name>/lesson.dart` and `NOTES.md`
    (decisions, rejected alternatives, when it is the wrong choice, interview
    phrasing).
-3. Register it in `lib/src/lessons/lesson_registry.dart` and update
+3. Give it a game: `quest.dart` in the lesson folder, passed as `quest:`.
+   Saeed studies by playing (colour, emoji, celebration, 0 to 100%), so
+   every new lesson ships one. A quest is data: `Quiz` steps are plain
+   values, and a `Play` step is one widget that calls `onGoal` when the
+   learner has done the thing. Playgrounds run the real Dart objects (see
+   `d03_future_vs_stream/playgrounds.dart`); the shell (`QuestView`) owns
+   the progress line, XP, stars, confetti and the finish screen. No network
+   toggles or trace reading in the game; that stays in the lab view.
+   Test that every playground can be won (`test/lessons/d03_playgrounds_test.dart`).
+4. Register it in `lib/src/lessons/lesson_registry.dart` and update
    `docs/CAREER_OS_MAP.md`.
-4. `flutter analyze` and `flutter test` must be clean.
+5. `flutter analyze` and `flutter test` must be clean.
 
 ## Commands
 

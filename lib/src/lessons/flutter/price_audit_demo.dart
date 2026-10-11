@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:project_lab/src/modules/lab/providers/trace_log.dart';
 import 'package:project_lab/src/modules/price_audit/services/fake_price_api.dart';
 
-/// The frame both price-audit lessons run in: one fake server whose network
+/// The frame every price-audit lesson runs in: one fake server whose network
 /// condition can be changed while the screen under study is live.
 class PriceAuditDemo extends StatefulWidget {
   const PriceAuditDemo({super.key, required this.trace, required this.builder});

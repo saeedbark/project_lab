@@ -41,6 +41,7 @@ class LabColors extends ThemeExtension<LabColors> {
     required this.repository,
     required this.dataSource,
     required this.success,
+    required this.game,
   });
 
   static const light = LabColors(
@@ -49,6 +50,13 @@ class LabColors extends ThemeExtension<LabColors> {
     repository: Color(0xFFD84315),
     dataSource: Color(0xFF6D4C41),
     success: Color(0xFF2E7D32),
+    game: [
+      Color(0xFF7C3AED), // violet
+      Color(0xFFDB2777), // pink
+      Color(0xFFEA580C), // orange
+      Color(0xFF0891B2), // cyan
+      Color(0xFF16A34A), // green
+    ],
   );
 
   static const dark = LabColors(
@@ -57,6 +65,13 @@ class LabColors extends ThemeExtension<LabColors> {
     repository: Color(0xFFFFAB91),
     dataSource: Color(0xFFBCAAA4),
     success: Color(0xFF81C784),
+    game: [
+      Color(0xFFA78BFA),
+      Color(0xFFF472B6),
+      Color(0xFFFB923C),
+      Color(0xFF22D3EE),
+      Color(0xFF4ADE80),
+    ],
   );
 
   final Color ui;
@@ -64,6 +79,10 @@ class LabColors extends ThemeExtension<LabColors> {
   final Color repository;
   final Color dataSource;
   final Color success;
+
+  /// Bright accents for the quest screens, in a fixed order (violet, pink,
+  /// orange, cyan, green). The seed scheme is calm on purpose; a game is not.
+  final List<Color> game;
 
   /// Falls back on brightness so a widget also works under a bare
   /// `MaterialApp`, as in widget tests.
@@ -87,12 +106,14 @@ class LabColors extends ThemeExtension<LabColors> {
     Color? repository,
     Color? dataSource,
     Color? success,
+    List<Color>? game,
   }) => LabColors(
     ui: ui ?? this.ui,
     state: state ?? this.state,
     repository: repository ?? this.repository,
     dataSource: dataSource ?? this.dataSource,
     success: success ?? this.success,
+    game: game ?? this.game,
   );
 
   @override
@@ -104,6 +125,10 @@ class LabColors extends ThemeExtension<LabColors> {
       repository: Color.lerp(repository, other.repository, t)!,
       dataSource: Color.lerp(dataSource, other.dataSource, t)!,
       success: Color.lerp(success, other.success, t)!,
+      game: [
+        for (var i = 0; i < game.length; i++)
+          Color.lerp(game[i], other.game[i], t)!,
+      ],
     );
   }
 }
